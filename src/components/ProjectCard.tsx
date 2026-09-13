@@ -38,26 +38,26 @@ export function ProjectCard({
 
   return (
     <m.div
-      initial={{ opacity: 0, y: 20, filter: "blur(4px)" }}
-      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      initial={{ opacity: 0, y: 12 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{
-        duration: 0.5,
+        duration: 0.4,
         ease: [0.23, 1, 0.32, 1] as const,
-        delay: index * 0.1,
+        delay: index * 0.08,
       }}
     >
       <Link
         to={`/project/${slug}`}
-        className="group block h-full rounded-[2rem] border border-border bg-card p-3 sm:p-4 theme-transition hover:shadow-subtle hover:-translate-y-1 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]"
+        className="group block h-full rounded-[2rem] border border-border bg-card p-3 sm:p-4 theme-transition hover:border-muted transition-colors duration-200"
       >
         <div
-          className={`overflow-hidden ${resolveProjectBgClass(bgClass)} aspect-[4/3] rounded-2xl relative transition-transform duration-500 ease-out`}
+          className={`overflow-hidden ${resolveProjectBgClass(bgClass)} aspect-[4/3] rounded-2xl relative`}
         >
           {previewVideo ? (
             <video
               src={previewVideo}
-              className={`h-full w-full object-cover ${imagePosition} transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-[1.05]`}
+              className={`h-full w-full object-cover ${imagePosition}`}
               autoPlay
               loop
               muted
@@ -69,13 +69,11 @@ export function ProjectCard({
             <img
               src={image}
               alt={title}
-              className={`w-full h-full object-cover ${imagePosition} transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-[1.05]`}
+              className={`w-full h-full object-cover ${imagePosition}`}
             />
           )}
           
-          <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/0 to-transparent opacity-100 transition-opacity duration-300 sm:opacity-0 sm:group-hover:opacity-100" />
-          
-          <div className="absolute bottom-4 left-4 right-4 flex flex-wrap items-center gap-2 opacity-100 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] sm:translate-y-4 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100">
+          <div className="absolute bottom-4 left-4 right-4 flex flex-wrap items-center gap-2">
             {tags.slice(0, 3).map((tag) => {
               const iconUrl = TAG_TO_ICON[tag];
               if (iconUrl) {

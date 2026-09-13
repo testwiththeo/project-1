@@ -7,7 +7,6 @@ import {
   ChatCircleText,
   Code,
   GitBranch,
-  Quotes,
   ShieldCheck,
   TestTube,
 } from "@phosphor-icons/react";
@@ -24,39 +23,6 @@ const SKILLS = [
   { label: "CI/CD", icon: GitBranch },
 ] as const;
 
-const HERO_TESTIMONIALS = [
-  {
-    quote:
-      "Working with Theo was smooth and effective. He brings clear quality ownership and practical testing decisions.",
-    name: "Akmal Bintang",
-    role: "Software Engineer @ Kalbe Group",
-    avatar: "/akmal-bintang.png",
-    initials: "AB",
-  },
-  {
-    quote:
-      "We were on the same project team, and Theo helped us move faster by keeping quality visible while we built.",
-    name: "Alfi Akmal",
-    role: "IT Support Specialist",
-    avatar: "/alfi-art.png",
-    initials: "AA",
-  },
-  {
-    quote:
-      "Building a project with Theo felt collaborative. He catches edge cases early and keeps the team focused on shipping well.",
-    name: "Fahmi Andika",
-    role: "Fullstack Developer",
-    avatar: "/fahmi-art.png",
-    initials: "FA",
-  },
-] as const;
-
-const TESTIMONIAL_CARD_POSITIONS = [
-  { top: -28, right: 46, rotate: -1.5, zIndex: 30 },
-  { top: 86, right: 28, rotate: 1.25, zIndex: 20 },
-  { top: 200, right: 62, rotate: -0.75, zIndex: 10 },
-] as const;
-
 const EASE_OUT = [0.23, 1, 0.32, 1] as const;
 
 const heroContainer = {
@@ -70,12 +36,11 @@ const heroContainer = {
 };
 
 const heroItem = {
-  hidden: { opacity: 0, y: 12, filter: "blur(6px)" },
+  hidden: { opacity: 0, y: 8 },
   show: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
-    transition: { duration: 0.55, ease: EASE_OUT },
+    transition: { duration: 0.4, ease: EASE_OUT },
   },
 };
 
@@ -83,26 +48,23 @@ const skillsContainer = {
   hidden: {},
   show: {
     transition: {
-      staggerChildren: 0.04,
-      delayChildren: 0.24,
+      staggerChildren: 0.03,
+      delayChildren: 0.2,
     },
   },
 };
 
 const skillItem = {
-  hidden: { opacity: 0, y: 8, filter: "blur(4px)" },
+  hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    y: 0,
-    filter: "blur(0px)",
-    transition: { duration: 0.42, ease: EASE_OUT },
+    transition: { duration: 0.3, ease: EASE_OUT },
   },
 };
 
 export function Hero() {
   const { openContactDialog } = useContactDialog();
   const prefersReducedMotion = useReducedMotion();
-  const [activeTestimonial, setActiveTestimonial] = useState<number | null>(null);
   const [pageSettings, setPageSettings] = useState<PageSettings | null>(null);
   const [settingsLoading, setSettingsLoading] = useState(true);
 
@@ -144,8 +106,8 @@ export function Hero() {
       animate="show"
       variants={heroContainer}
     >
-      <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,760px)_minmax(300px,1fr)] lg:gap-12 xl:gap-16">
-        <div className="flex max-w-3xl flex-col gap-y-5 lg:pl-4 xl:pl-6">
+      <div className="max-w-3xl mx-auto">
+        <div className="flex flex-col gap-y-5">
           <div className="space-y-4 sm:space-y-5">
             <m.div
               className="flex items-center gap-x-3 sm:gap-x-4"
@@ -243,101 +205,6 @@ export function Hero() {
             ))}
           </m.div>
         </div>
-
-        <m.aside
-          className="relative hidden min-h-[370px] justify-self-end lg:block lg:w-full"
-          variants={heroItem}
-          aria-label="Testimonials from friends"
-        >
-          <div className="relative h-[370px] w-full max-w-[390px]">
-            {HERO_TESTIMONIALS.map((testimonial, index) => {
-              const position = TESTIMONIAL_CARD_POSITIONS[index];
-              const isActive = activeTestimonial === index;
-              const hasActiveCard = activeTestimonial !== null;
-              const cardScale = hasActiveCard && !isActive ? 0.992 : 1;
-
-              return (
-                <m.button
-                  key={testimonial.name}
-                  type="button"
-                  onBlur={() => setActiveTestimonial(null)}
-                  onFocus={() => setActiveTestimonial(index)}
-                  onMouseEnter={() => setActiveTestimonial(index)}
-                  onMouseLeave={() => setActiveTestimonial(null)}
-                  className="absolute w-[340px] max-w-full cursor-pointer text-left focus:outline-none"
-                  style={{
-                    zIndex: isActive ? 40 : position.zIndex,
-                    transformOrigin: "center center",
-                  }}
-                  animate={{
-                    top: position.top,
-                    right: position.right,
-                    rotate: isActive ? 0 : position.rotate,
-                    scale: cardScale,
-                  }}
-                  whileHover={
-                    prefersReducedMotion
-                      ? undefined
-                      : { scale: 1.012 }
-                  }
-                  whileTap={prefersReducedMotion ? undefined : { scale: 0.992 }}
-                  transition={
-                    prefersReducedMotion
-                      ? { duration: 0 }
-                      : { duration: 0.55, ease: EASE_OUT }
-                  }
-                  aria-pressed={isActive}
-                  aria-label={`Show testimonial from ${testimonial.name}`}
-                >
-                  <m.div
-                    className="rounded-2xl border border-border bg-card/95 p-5 shadow-subtle backdrop-blur theme-transition hover:border-muted focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-card"
-                    animate={
-                      prefersReducedMotion
-                        ? undefined
-                        : {
-                            y: [0, isActive ? -2 : -1, 0],
-                            x: [0, index % 2 === 0 ? 1 : -1, 0],
-                          }
-                    }
-                    transition={{
-                      duration: 7 + index * 0.55,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                      delay: index * 0.18,
-                    }}
-                  >
-                    <Quotes
-                      size={22}
-                      weight="fill"
-                      className="mb-3 text-surface-nested"
-                      aria-hidden="true"
-                    />
-                    <p className="text-[14px] font-medium leading-relaxed text-foreground">
-                      &ldquo;{testimonial.quote}&rdquo;
-                    </p>
-                    <div className="mt-4 flex items-center gap-x-3">
-                      <div className="relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-surface text-[12px] font-semibold text-foreground">
-                        <img
-                          src={testimonial.avatar}
-                          alt={`${testimonial.name} Avatar`}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                      <div>
-                        <p className="text-[13px] font-semibold text-foreground">
-                          {testimonial.name}
-                        </p>
-                        <p className="mt-0.5 text-[12px] font-medium text-muted">
-                          {testimonial.role}
-                        </p>
-                      </div>
-                    </div>
-                  </m.div>
-                </m.button>
-              );
-            })}
-          </div>
-        </m.aside>
       </div>
     </m.section>
   );

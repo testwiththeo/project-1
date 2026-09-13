@@ -14,12 +14,11 @@ const containerVariants = {
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 15, filter: "blur(4px)" },
+  hidden: { opacity: 0, y: 10 },
   show: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
-    transition: { duration: 0.5, ease: [0.23, 1, 0.32, 1] as const },
+    transition: { duration: 0.4, ease: [0.23, 1, 0.32, 1] as const },
   },
 };
 
@@ -34,13 +33,9 @@ export function AboutSection() {
       viewport={{ once: true, margin: "-100px" }}
       variants={containerVariants}
     >
-      <div style={{ perspective: "1200px" }}>
-        <m.div
-          className="bg-canvas rounded-[3rem] p-8 sm:p-12 lg:p-16 border border-border/50 theme-transition"
-          style={{ transformStyle: "preserve-3d" }}
-          whileHover={{ rotateX: 2, rotateY: -2, y: -4 }}
-          transition={{ type: "spring", stiffness: 240, damping: 22 }}
-        >
+      <m.div
+        className="bg-canvas rounded-[3rem] p-8 sm:p-12 lg:p-16 border border-border/50 theme-transition"
+      >
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
             {/* Left */}
             <div>

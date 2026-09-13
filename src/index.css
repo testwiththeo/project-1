@@ -152,7 +152,7 @@ body {
 }
 
 /* OverlayScrollbars — theme-aware */
-.os-theme-faiz {
+.os-theme-theodore {
   --os-size: 10px;
   --os-padding-perpendicular: 4px;
   --os-padding-axis: 4px;
@@ -165,7 +165,7 @@ body {
   --os-handle-bg-active: rgba(38, 37, 16, 0.9);
 }
 
-.dark .os-theme-faiz {
+.dark .os-theme-theodore {
   --os-track-bg: rgba(247, 247, 244, 0.06);
   --os-track-bg-hover: rgba(247, 247, 244, 0.09);
   --os-handle-bg: rgba(154, 153, 148, 0.55);
@@ -174,47 +174,18 @@ body {
 }
 
 @layer components {
-  /* Hero primary CTA — portfolio personality exception (see DESIGN.md) */
+  /* Primary CTA - minimal flat button */
   .btn-embossed {
-    background: linear-gradient(180deg, #2a2a2a 0%, #111111 100%);
-    box-shadow:
-      inset 0px 1px 1px rgba(255, 255, 255, 0.15),
-      inset 0px -2px 4px rgba(0, 0, 0, 0.6),
-      0px 6px 12px rgba(0, 0, 0, 0.25),
-      0px 2px 4px rgba(0, 0, 0, 0.15);
-    border: 1px solid #000;
-    transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 160ms cubic-bezier(0.23, 1, 0.32, 1), background 160ms cubic-bezier(0.23, 1, 0.32, 1);
+    background: var(--color-foreground);
+    border: 1px solid var(--color-foreground);
+    transition: opacity 150ms ease, transform 150ms ease;
   }
   .btn-embossed:hover {
-    background: linear-gradient(180deg, #3a3a3a 0%, #171717 100%);
-    box-shadow:
-      inset 0px 1px 1px rgba(255, 255, 255, 0.25),
-      inset 0px -2px 4px rgba(0, 0, 0, 0.6),
-      0px 8px 16px rgba(0, 0, 0, 0.3),
-      0px 4px 6px rgba(0, 0, 0, 0.2);
+    opacity: 0.9;
   }
   .btn-embossed:active {
-    background: linear-gradient(180deg, #111111 0%, #222222 100%);
-    box-shadow:
-      inset 0px 2px 6px rgba(0, 0, 0, 0.8),
-      0px 2px 4px rgba(0, 0, 0, 0.2);
-    transform: scale(0.97);
-  }
-
-  .dark .btn-embossed {
-    background: linear-gradient(180deg, #3a3a36 0%, #1f1f1c 100%);
-    border-color: #2a2a26;
-    box-shadow:
-      inset 0px 1px 1px rgba(255, 255, 255, 0.08),
-      inset 0px -2px 4px rgba(0, 0, 0, 0.5),
-      0px 6px 12px rgba(0, 0, 0, 0.4),
-      0px 2px 4px rgba(0, 0, 0, 0.25);
-  }
-  .dark .btn-embossed:hover {
-    background: linear-gradient(180deg, #4a4a44 0%, #2a2a26 100%);
-  }
-  .dark .btn-embossed:active {
-    background: linear-gradient(180deg, #1f1f1c 0%, #2a2a26 100%);
+    opacity: 0.8;
+    transform: scale(0.98);
   }
 
   .skeleton {
