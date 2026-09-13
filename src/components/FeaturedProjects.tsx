@@ -1,23 +1,34 @@
-import { ArrowRight } from '@phosphor-icons/react';
-import { Link } from 'react-router-dom';
-import { useProjects } from '../hooks/useProjects';
-import { ProjectCard, ProjectsGridSkeleton } from './ProjectCard';
+import { ArrowRight } from "@phosphor-icons/react";
+import { Link } from "react-router-dom";
+import { useProjects } from "../hooks/useProjects";
+import { ProjectCard, ProjectsGridSkeleton } from "./ProjectCard";
 
 export function FeaturedProjects() {
-  const { projects, loading, error, retry } = useProjects({ featuredOnly: true });
+  const { projects, loading, error, retry } = useProjects({
+    featuredOnly: true,
+  });
 
   return (
     <section>
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
-        <div>
-          <h2 className="text-3xl font-semibold tracking-tight text-foreground">Featured Projects</h2>
-        </div>
+      <div className="max-w-3xl mx-auto mb-6 text-center">
+        <p className="text-[11px] font-semibold tracking-[0.3em] text-muted uppercase">
+          Projects.
+        </p>
+        <h2 className="mt-2 text-[2rem] sm:text-[2.5rem] leading-[1.1] font-semibold tracking-tight text-foreground">
+          Selected work.
+        </h2>
+      </div>
+
+      <div className="mb-6 flex justify-end">
         <Link
           to="/projects"
-          className="flex items-center gap-x-2 text-[15px] font-medium text-muted hover:text-foreground theme-transition group"
+          className="flex items-center gap-x-2 text-[14px] font-medium text-muted hover:text-foreground theme-transition group"
         >
-          <span>View all</span>
-          <ArrowRight size={16} className="text-muted group-hover:text-foreground theme-transition" />
+          <span>View all work</span>
+          <ArrowRight
+            size={14}
+            className="transition-transform duration-200 ease-out group-hover:translate-x-1"
+          />
         </Link>
       </div>
 
@@ -42,13 +53,14 @@ export function FeaturedProjects() {
       )}
 
       {!loading && !error && projects.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {projects.map((project, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
+          {projects.slice(0, 2).map((project, index) => (
             <ProjectCard
               key={project.slug}
               index={index}
               slug={project.slug}
               title={project.title}
+              description={project.description}
               image={project.image}
               tags={project.tags}
               bgClass={project.bgClass}

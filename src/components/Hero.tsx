@@ -1,72 +1,133 @@
-import { useState, useEffect } from 'react';
-import { m, AnimatePresence } from 'motion/react';
-import { BracketsCurly, ChatCircleText, Code, FigmaLogo, PenNib, Sparkle } from '@phosphor-icons/react';
-import { apiUrl } from '../lib/api';
+import { useEffect, useState } from "react";
+import { m, useReducedMotion } from "motion/react";
+import { Link } from "react-router-dom";
 import {
-  DEFAULT_PAGE_SETTINGS,
-  type PageSettings,
-} from '../lib/page-settings';
-import type { Testimonial } from '../types/testimonial';
-import { HeroImage, HeroImageSkeleton } from './HeroImage';
-import { useContactDialog } from './ContactDialogProvider';
-import { CursorIcon } from './CursorIcon';
+  ArrowRight,
+  Bug,
+  ChatCircleText,
+  Code,
+  GitBranch,
+  Quotes,
+  ShieldCheck,
+  TestTube,
+} from "@phosphor-icons/react";
+import { apiUrl } from "../lib/api";
+import { DEFAULT_PAGE_SETTINGS, type PageSettings } from "../lib/page-settings";
+import { HeroImage, HeroImageSkeleton } from "./HeroImage";
+import { useContactDialog } from "./ContactDialogProvider";
+
+const SKILLS = [
+  { label: "Test Automation", icon: TestTube },
+  { label: "Quality Engineering", icon: Bug },
+  { label: "Test Strategy", icon: ShieldCheck },
+  { label: "API Testing", icon: Code },
+  { label: "CI/CD", icon: GitBranch },
+] as const;
+
+const HERO_TESTIMONIALS = [
+  {
+    quote:
+      "Working with Theo was smooth and effective. He brings clear quality ownership and practical testing decisions.",
+    name: "Akmal Bintang",
+    role: "Software Engineer @ Kalbe Group",
+    avatar: "/akmal-bintang.png",
+    initials: "AB",
+  },
+  {
+    quote:
+      "We were on the same project team, and Theo helped us move faster by keeping quality visible while we built.",
+    name: "Alfi Akmal",
+    role: "IT Support Specialist",
+    avatar: "/alfi-art.png",
+    initials: "AA",
+  },
+  {
+    quote:
+      "Building a project with Theo felt collaborative. He catches edge cases early and keeps the team focused on shipping well.",
+    name: "Fahmi Andika",
+    role: "Fullstack Developer",
+    avatar: "/fahmi-art.png",
+    initials: "FA",
+  },
+] as const;
+
+const TESTIMONIAL_CARD_POSITIONS = [
+  { top: -28, right: 46, rotate: -1.5, zIndex: 30 },
+  { top: 86, right: 28, rotate: 1.25, zIndex: 20 },
+  { top: 200, right: 62, rotate: -0.75, zIndex: 10 },
+] as const;
+
+const EASE_OUT = [0.23, 1, 0.32, 1] as const;
+
+const heroContainer = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.08,
+    },
+  },
+};
+
+const heroItem = {
+  hidden: { opacity: 0, y: 12, filter: "blur(6px)" },
+  show: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.55, ease: EASE_OUT },
+  },
+};
+
+const skillsContainer = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.04,
+      delayChildren: 0.24,
+    },
+  },
+};
+
+const skillItem = {
+  hidden: { opacity: 0, y: 8, filter: "blur(4px)" },
+  show: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.42, ease: EASE_OUT },
+  },
+};
 
 export function Hero() {
   const { openContactDialog } = useContactDialog();
-  const [activeTestimonial, setActiveTestimonial] = useState(0);
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [testimonialsLoading, setTestimonialsLoading] = useState(true);
+  const prefersReducedMotion = useReducedMotion();
+  const [activeTestimonial, setActiveTestimonial] = useState<number | null>(null);
   const [pageSettings, setPageSettings] = useState<PageSettings | null>(null);
   const [settingsLoading, setSettingsLoading] = useState(true);
-
-  const count = testimonials.length;
-  const activeIndex = count === 0 ? 0 : Math.min(activeTestimonial, count - 1);
-  const current = count > 0 ? testimonials[activeIndex] : null;
-
-  useEffect(() => {
-    if (count <= 1) return;
-
-    const interval = setInterval(() => {
-      setActiveTestimonial((prev) => (prev + 1) % count);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [count]);
 
   useEffect(() => {
     let cancelled = false;
 
     void (async () => {
       try {
-        const [settingsRes, testimonialsRes] = await Promise.all([
-          fetch(apiUrl('/api/page-settings')),
-          fetch(apiUrl('/api/testimonials')),
-        ]);
+        const res = await fetch(apiUrl("/api/page-settings"));
 
         if (cancelled) return;
 
-        if (settingsRes.ok) {
-          const settings = (await settingsRes.json()) as PageSettings;
+        if (res.ok) {
+          const settings = (await res.json()) as PageSettings;
           setPageSettings(settings);
         } else {
           setPageSettings(DEFAULT_PAGE_SETTINGS);
         }
-
-        if (testimonialsRes.ok) {
-          const items = (await testimonialsRes.json()) as Testimonial[];
-          setTestimonials(items);
-        } else {
-          setTestimonials([]);
-        }
       } catch {
         if (!cancelled) {
           setPageSettings(DEFAULT_PAGE_SETTINGS);
-          setTestimonials([]);
         }
       } finally {
         if (!cancelled) {
           setSettingsLoading(false);
-          setTestimonialsLoading(false);
         }
       }
     })();
@@ -77,159 +138,207 @@ export function Hero() {
   }, []);
 
   return (
-    <section className="grid grid-cols-1 xl:grid-cols-[1.2fr_1fr] gap-12 xl:gap-20 items-start">
-      {/* Left Column — intro + skills (mobile: 1st; desktop: col 1 top) */}
-      <div className="order-1 xl:order-none xl:col-start-1 xl:row-start-1 flex flex-col gap-y-10">
-        {/* Header / Intro */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-x-4 animate-blur-reveal">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-orange-50/50 dark:bg-orange-950/30 border-4 border-card overflow-hidden flex items-center justify-center shadow-[0px_6px_12px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.15)] transform transition-transform duration-200 ease-out hover:scale-110 hover:-rotate-12 cursor-pointer relative">
-              {settingsLoading || !pageSettings ? (
-                <HeroImageSkeleton />
-              ) : (
-                <HeroImage
-                  key={pageSettings.avatarImage}
-                  src={pageSettings.avatarImage}
-                  alt="Faiz Avatar"
-                  imgClassName="absolute inset-0 w-full h-full object-cover rounded-1xl"
-                  loading="eager"
-                  fetchPriority="high"
-                />
-              )}
-            </div>
-            <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight text-foreground">Faiz Intifada</h1>
-          </div>
-          
-          <h2 className="text-[1.75rem] sm:text-4xl leading-[1.3] text-foreground tracking-tight font-medium animate-blur-reveal delay-100">
-            {`Design engineer building products at the intersection of UI, code, and craft. Part of `}
-            <span className="text-muted inline-flex items-center">
-              Cursor <CursorIcon className="size-8 mx-2 inline-block shrink-0 text-foreground opacity-80" /> Ambassadors
-            </span>
-          </h2>
-          
-          <div className="pt-2 animate-blur-reveal delay-150">
-            <button
-              type="button"
-              onClick={openContactDialog}
-              className="inline-flex items-center gap-x-2 text-white px-6 py-4 rounded-full font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-foreground focus:ring-offset-card btn-embossed"
+    <m.section
+      className="-mt-2 sm:-mt-8"
+      initial={prefersReducedMotion ? false : "hidden"}
+      animate="show"
+      variants={heroContainer}
+    >
+      <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,760px)_minmax(300px,1fr)] lg:gap-12 xl:gap-16">
+        <div className="flex max-w-3xl flex-col gap-y-5 lg:pl-4 xl:pl-6">
+          <div className="space-y-4 sm:space-y-5">
+            <m.div
+              className="flex items-center gap-x-3 sm:gap-x-4"
+              variants={heroItem}
             >
-              <ChatCircleText size={20} weight="regular" />
-              <span>Discuss a Project</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Skills */}
-        <div className="flex flex-wrap gap-3 sm:gap-4 pt-4 animate-blur-reveal delay-200">
-          <div className="flex items-center gap-x-2 px-5 py-3 rounded-full border border-border text-sm font-medium text-foreground hover:bg-surface theme-transition cursor-default">
-            <PenNib size={18} className="text-muted" />
-            <span>Product Design</span>
-          </div>
-          <div className="flex items-center gap-x-2 px-5 py-3 rounded-full border border-border text-sm font-medium text-foreground hover:bg-surface theme-transition cursor-default">
-            <Code size={18} className="text-muted" />
-            <span>UI Engineering</span>
-          </div>
-          <div className="flex items-center gap-x-2 px-5 py-3 rounded-full border border-border text-sm font-medium text-foreground hover:bg-surface theme-transition cursor-default">
-            <BracketsCurly size={18} className="text-muted" />
-            <span>React / Next.js</span>
-          </div>
-          <div className="flex items-center gap-x-2 px-5 py-3 rounded-full border border-border text-sm font-medium text-foreground hover:bg-surface theme-transition cursor-default">
-            <FigmaLogo size={18} className="text-muted" />
-            <span>Design Systems</span>
-          </div>
-          <div className="flex items-center gap-x-2 px-5 py-3 rounded-full border border-border text-sm font-medium text-foreground hover:bg-surface theme-transition cursor-default">
-            <Sparkle size={18} className="text-muted" />
-            <span>Prototyping</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Hero images (mobile: 2nd; desktop: col 2) */}
-      <div className="order-2 xl:order-none xl:col-start-2 xl:row-start-1 xl:row-span-2 flex flex-col gap-6 h-full xl:-my-4">
-        <div className="rounded-[1rem] overflow-hidden aspect-[1.91/1] xl:aspect-auto xl:flex-1 relative bg-surface-nested animate-blur-reveal delay-300">
-          {settingsLoading || !pageSettings ? (
-            <HeroImageSkeleton />
-          ) : (
-            <HeroImage
-              key={pageSettings.heroImageTop}
-              src={pageSettings.heroImageTop}
-              alt="Faiz Intifada — design engineer portfolio hero"
-              imgClassName="absolute inset-0 w-full h-full object-cover object-center transform hover:scale-[1.025]"
-              loading="eager"
-              fetchPriority="high"
-            />
-          )}
-        </div>
-        <div className="rounded-[1rem] overflow-hidden aspect-[1.91/1] xl:aspect-auto xl:flex-1 relative bg-surface-nested animate-blur-reveal delay-400">
-          {settingsLoading || !pageSettings ? (
-            <HeroImageSkeleton />
-          ) : (
-            <HeroImage
-              key={pageSettings.heroImageMiddle}
-              src={pageSettings.heroImageMiddle}
-              alt="Design engineer work — UI and product visuals"
-              imgClassName="absolute inset-0 w-full h-full object-cover object-center transform hover:scale-[1.025]"
-            />
-          )}
-        </div>
-        <div className="rounded-[1rem] overflow-hidden aspect-[1.91/1] xl:aspect-auto xl:flex-1 relative bg-surface-nested animate-blur-reveal delay-500">
-          {settingsLoading || !pageSettings ? (
-            <HeroImageSkeleton />
-          ) : (
-            <HeroImage
-              key={pageSettings.heroImageBottom}
-              src={pageSettings.heroImageBottom}
-              alt="Design engineer portfolio — digital product detail"
-              imgClassName="absolute inset-0 w-full h-full object-cover object-center transform hover:scale-[1.025]"
-            />
-          )}
-        </div>
-      </div>
-
-      {/* Testimonial (mobile: 3rd; desktop: col 1 bottom) */}
-      {!testimonialsLoading && count > 0 && current ? (
-        <div className="order-3 xl:order-none xl:col-start-1 xl:row-start-2 pt-0 xl:pt-6 w-full sm:max-w-xl animate-blur-reveal delay-250">
-          <div className="border border-border rounded-3xl p-8 bg-card shadow-subtle relative min-h-[260px] flex flex-col justify-between theme-transition">
-            <AnimatePresence mode="wait">
               <m.div
-                key={current.id}
-                initial={{ opacity: 0, y: 10, scale: 0.98, filter: "blur(2px)" }}
-                animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-                exit={{ opacity: 0, y: -10, scale: 0.98, filter: "blur(2px)" }}
-                transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] as const }}
-                className="flex-1 flex flex-col"
+                className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-card bg-orange-50/50 shadow-[0px_5px_10px_rgba(0,0,0,0.18),0px_1px_3px_rgba(0,0,0,0.14)] dark:bg-orange-950/30 sm:h-16 sm:w-16"
+                whileHover={
+                  prefersReducedMotion ? undefined : { rotate: -4, scale: 1.04 }
+                }
+                whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+                transition={{ type: "spring", stiffness: 260, damping: 20 }}
               >
-                <p className="text-[17px] leading-relaxed text-foreground font-medium pb-4">
-                  &ldquo;{current.quote}&rdquo;
-                </p>
-                <div className="mt-auto pt-4 flex items-center gap-x-4">
-                  <div className="size-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center p-1 border border-border shrink-0">
-                    <img src={current.avatar} alt={`${current.name} Avatar`} className="w-full h-full object-cover rounded-lg" />
-                  </div>
-                  <div>
-                    <h4 className="text-[15px] font-semibold text-foreground">{current.name}</h4>
-                    <p className="text-[13px] text-muted font-medium mt-0.5">{current.role}</p>
-                  </div>
-                </div>
+                {settingsLoading || !pageSettings ? (
+                  <HeroImageSkeleton />
+                ) : (
+                  <HeroImage
+                    key={pageSettings.avatarImage}
+                    src={pageSettings.avatarImage}
+                    alt="Theodore Avatar"
+                    imgClassName="absolute inset-0 h-full w-full object-cover"
+                    loading="eager"
+                    fetchPriority="high"
+                  />
+                )}
               </m.div>
-            </AnimatePresence>
-          </div>
-          {count > 1 ? (
-            <div className="flex justify-center gap-x-2 mt-6">
-              {testimonials.map((testimonial, idx) => (
-                <button
-                  key={testimonial.id}
-                  type="button"
-                  onClick={() => setActiveTestimonial(idx)}
-                  className={`h-2 rounded-full transition-[width,background-color] duration-200 ease-out ${activeIndex === idx ? 'w-6 bg-foreground' : 'w-2 bg-surface-nested hover:bg-muted'}`}
-                  aria-label={`Go to testimonial ${idx + 1}`}
-                />
-              ))}
-            </div>
-          ) : null}
-        </div>
-      ) : null}
+              <h1 className="text-[1.75rem] font-semibold tracking-tight text-foreground sm:text-[2.5rem] lg:text-[2.75rem]">
+                Hi, I'm Theodore
+              </h1>
+            </m.div>
 
-    </section>
+            <m.p
+              className="flex items-center gap-x-2 text-[13px] font-medium text-muted sm:text-[14px]"
+              variants={heroItem}
+            >
+              <span aria-hidden="true" className="text-base">
+                🇮🇩
+              </span>
+              <span>Based in Surabaya, Indonesia</span>
+            </m.p>
+
+            <p className="sr-only">
+              Theodorus Yosia Raffael Gunawan, known as Theodore, is a Software
+              Engineer in Test based in Indonesia.
+            </p>
+
+            <m.h2
+              className="max-w-2xl text-[1.5rem] font-medium leading-[1.28] tracking-tight text-foreground sm:text-[2.25rem]"
+              variants={heroItem}
+            >
+              I break things so users don't have to.
+              Quality Engineer crafting reliable software through smart testing.
+            </m.h2>
+
+            <m.div
+              className="flex flex-wrap items-center gap-x-5 gap-y-3 pt-1"
+              variants={heroItem}
+            >
+              <button
+                type="button"
+                onClick={openContactDialog}
+                className="inline-flex items-center gap-x-2 rounded-full px-5 py-3.5 text-[14.5px] font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-foreground focus:ring-offset-card btn-embossed will-change-transform"
+              >
+                <ChatCircleText size={18} weight="regular" />
+                <span>Get in Touch</span>
+              </button>
+              <Link
+                to="/projects"
+                className="group inline-flex items-center gap-x-1.5 rounded-full text-[14.5px] font-medium text-muted transition-colors duration-200 ease-out hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-card"
+              >
+                View my work
+                <ArrowRight
+                  size={15}
+                  className="transition-transform duration-200 ease-out group-hover:translate-x-0.5"
+                />
+              </Link>
+            </m.div>
+          </div>
+
+          <m.div
+            className="flex flex-wrap gap-2 sm:gap-2.5"
+            variants={skillsContainer}
+          >
+            {SKILLS.map(({ label, icon: Icon }) => (
+              <m.div
+                key={label}
+                className="flex items-center gap-x-1.5 rounded-full border border-border bg-card/50 px-3.5 py-2 text-[13px] font-medium text-foreground theme-transition hover:bg-surface hover:border-muted min-h-[44px] sm:min-h-0"
+                variants={skillItem}
+                whileHover={prefersReducedMotion ? undefined : { y: -2 }}
+                transition={{ type: "spring", stiffness: 320, damping: 24 }}
+              >
+                <Icon size={14} className="text-muted" />
+                <span>{label}</span>
+              </m.div>
+            ))}
+          </m.div>
+        </div>
+
+        <m.aside
+          className="relative hidden min-h-[370px] justify-self-end lg:block lg:w-full"
+          variants={heroItem}
+          aria-label="Testimonials from friends"
+        >
+          <div className="relative h-[370px] w-full max-w-[390px]">
+            {HERO_TESTIMONIALS.map((testimonial, index) => {
+              const position = TESTIMONIAL_CARD_POSITIONS[index];
+              const isActive = activeTestimonial === index;
+              const hasActiveCard = activeTestimonial !== null;
+              const cardScale = hasActiveCard && !isActive ? 0.992 : 1;
+
+              return (
+                <m.button
+                  key={testimonial.name}
+                  type="button"
+                  onBlur={() => setActiveTestimonial(null)}
+                  onFocus={() => setActiveTestimonial(index)}
+                  onMouseEnter={() => setActiveTestimonial(index)}
+                  onMouseLeave={() => setActiveTestimonial(null)}
+                  className="absolute w-[340px] max-w-full cursor-pointer text-left focus:outline-none"
+                  style={{
+                    zIndex: isActive ? 40 : position.zIndex,
+                    transformOrigin: "center center",
+                  }}
+                  animate={{
+                    top: position.top,
+                    right: position.right,
+                    rotate: isActive ? 0 : position.rotate,
+                    scale: cardScale,
+                  }}
+                  whileHover={
+                    prefersReducedMotion
+                      ? undefined
+                      : { scale: 1.012 }
+                  }
+                  whileTap={prefersReducedMotion ? undefined : { scale: 0.992 }}
+                  transition={
+                    prefersReducedMotion
+                      ? { duration: 0 }
+                      : { duration: 0.55, ease: EASE_OUT }
+                  }
+                  aria-pressed={isActive}
+                  aria-label={`Show testimonial from ${testimonial.name}`}
+                >
+                  <m.div
+                    className="rounded-2xl border border-border bg-card/95 p-5 shadow-subtle backdrop-blur theme-transition hover:border-muted focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-card"
+                    animate={
+                      prefersReducedMotion
+                        ? undefined
+                        : {
+                            y: [0, isActive ? -2 : -1, 0],
+                            x: [0, index % 2 === 0 ? 1 : -1, 0],
+                          }
+                    }
+                    transition={{
+                      duration: 7 + index * 0.55,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: index * 0.18,
+                    }}
+                  >
+                    <Quotes
+                      size={22}
+                      weight="fill"
+                      className="mb-3 text-surface-nested"
+                      aria-hidden="true"
+                    />
+                    <p className="text-[14px] font-medium leading-relaxed text-foreground">
+                      &ldquo;{testimonial.quote}&rdquo;
+                    </p>
+                    <div className="mt-4 flex items-center gap-x-3">
+                      <div className="relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-surface text-[12px] font-semibold text-foreground">
+                        <img
+                          src={testimonial.avatar}
+                          alt={`${testimonial.name} Avatar`}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div>
+                        <p className="text-[13px] font-semibold text-foreground">
+                          {testimonial.name}
+                        </p>
+                        <p className="mt-0.5 text-[12px] font-medium text-muted">
+                          {testimonial.role}
+                        </p>
+                      </div>
+                    </div>
+                  </m.div>
+                </m.button>
+              );
+            })}
+          </div>
+        </m.aside>
+      </div>
+    </m.section>
   );
 }
